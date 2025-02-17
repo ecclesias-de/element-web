@@ -15,6 +15,7 @@ import { shouldPolyfill as shouldPolyFillIntlSegmenter } from "@formatjs/intl-se
 
 // These are things that can run before the skin loads - be careful not to reference the react-sdk though.
 import { parseQsFromFragment } from "./url_utils";
+import { tineBootstrap } from "./tine";
 import "./modernizr";
 
 // Require common CSS here; this will make webpack process it into bundle.css.
@@ -99,7 +100,7 @@ const supportedBrowser = checkBrowserFeatures();
 // We start loading stuff but don't block on it until as late as possible to allow
 // the browser to use as much parallelism as it can.
 // Load parallelism is based on research in https://github.com/element-hq/element-web/issues/12253
-async function start(): Promise<void> {
+async function start(): Promise<void> {   
     if (shouldPolyFillIntlSegmenter()) {
         await import(/* webpackChunkName: "intl-segmenter-polyfill" */ "@formatjs/intl-segmenter/polyfill-force");
     }
@@ -237,7 +238,7 @@ async function start(): Promise<void> {
     }
 }
 
-start().catch((err) => {
+tineBootstrap(() => start().catch((err) => {
     // If we get here, things have gone terribly wrong and we cannot load the app javascript at all.
     // Show a different, very simple iframed-static error page. Or actually, one of two different ones
     // depending on whether the browser is supported (ie. we think we should be able to load but
@@ -260,4 +261,4 @@ start().catch((err) => {
     iframe.style.bottom = "0";
     iframe.style.border = "0";
     document.getElementById("matrixchat")?.appendChild(iframe);
-});
+}));
