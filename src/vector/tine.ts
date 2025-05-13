@@ -1,80 +1,142 @@
-// for dev without tine. Add to side embedding element client
-// window.addEventListener("message", async (event) => {
-//     if (event.data.type != "elementRequestCredentials") {
-//         return;
-//     }
-
-//     window.postMessage({
-//         type: "elementCredentials",
-//         mx_device_id: "",
-//         mx_access_token: "syt_ZGV4MQ_AsqABbNyPRRlmAClfUfS_3f98mq",
-//         mx_user_id: "@dex1:dev.dev-matrix.ebhh-test.k8s.mmertens.metaways.me",
-//         mx_hs_url: "",
-//         mx_is_url: "",
-//     }, window.origin);
-// });
+import { logger } from '@sentry/core';
+import RestoreKeyBackupDialog from '../components/views/dialogs/security/RestoreKeyBackupDialog';
+import { MatrixClientPeg } from '../MatrixClientPeg';
+import Modal from '../Modal';
+import { accessSecretStorage } from '../SecurityManager';
+import { AuthDict, UIAResponse } from 'matrix-js-sdk';
 
 // seeds local storage and index db in necessary and after that start element
-// notes on post message security: This script should not need to know origin of embedding page in advanced. Therefore the credential request is send to all origins. The origin of the first elementCredentials message, will become the new origin. It is stored in window.localStorage["tine_origin"].
+
+// notes on post message security: This script should not need to know origin of embedding page in advanced. Therefore the credential request is send to all origins. The origin of the first elementAccessToken message, will become the new origin. It is stored in window.localStorage["tine_origin"].
 export async function tineBootstrap(start: () => Promise<void>) {
     // for now clear all local state for testing purposes. Later it should be cleaned if the browser is closed / or all relevant information needs to be encrypted 
-    await clearLocalStorageAndIndexDb();
+    // await clearLocalStorageAndIndexDb();
+
+    window.onTest1234 = test1234
 
     window.addEventListener("message", async (event) => {
-        if (event.data.type != "elementCredentials") {
-            return;
-        }
+        console.log(event);
 
         if (window.localStorage["tine_origin"] !== event.origin && window.localStorage["tine_origin"] !== undefined) {
-            console.error("Received message elementCredentials: forbidden! Origin must match: " + window.localStorage["tine_origin"] + ", received: " + event.origin + ".");
+            console.debug("Received message from wrong origin.")
             return;
         }
 
-        await bootstrapWithCredentials(event.data, event.origin);
+        switch (event.data.type) {
+            case "elementAccessTokenResponse":
+                onElementAccessTokenResponse(event, start)
+                break;
+            case "elementUserdataResponse":
+                onElementUserdataResponse(event, start)
+                break;
+            default:
+                console.debug("Received message of unknown type.")
+                return;
+        }
 
-        console.info("Starting element.");
-        start();
+        setAllowedOrigin(event)
     });
 
-    if (isBootstrapped()) {
-        console.info("Already bootstrapped, starting element.");
-        start();
+    console.info("Requesting element userdata.")
+    // window.parent.postMessage({type: "elementUserdataRequest"}, "*");
+
+    start();
+}
+
+function setAllowedOrigin(event: MessageEvent<any>) {
+    if (window.localStorage["tine_origin"] === undefined) {
+        console.debug("Set allowed origin.");
+        window.localStorage["tine_origin"] = event.origin;
+    }
+}
+
+async function test1234() {
+    const cli = MatrixClientPeg.safeGet();
+    const crypto = cli.getCrypto()!;
+
+    let backupInfo = await crypto.getKeyBackupInfo();
+    if (backupInfo) {
+        logger.debug("eeeeeeeeeeeee: " + backupInfo + " <<<");
+        // proceed anyways for now
+        throw "did not expect backup info" + JSON.stringify(backupInfo)
+    }
+
+    await crypto.bootstrapSecretStorage({
+        createSecretStorageKey: async () => {
+            const passphrase = "element.local.tine-dev.de"
+            const recoveryKey = await MatrixClientPeg.safeGet().getCrypto()!.createRecoveryKeyFromPassphrase(passphrase);
+            return recoveryKey;
+        },
+        setupNewKeyBackup: true,
+        setupNewSecretStorage: true, //force reset
+    });
+
+    await crypto.bootstrapCrossSigning({
+        authUploadDeviceSigningKeys: async (makeRequest: (authData: AuthDict) => Promise<UIAResponse<void>>): Promise<void> => {
+            await makeRequest({
+                type: "m.login.password",
+                identifier: {
+                    type: "m.id.user",
+                    user: MatrixClientPeg.safeGet().getSafeUserId(),
+                },
+                password: "element.local.tine-dev.de", // is the same as recovery key for test accounts, but we need to do another type of login here
+            });
+        },
+        setupNewCrossSigning: true, //force reset
+    });
+}
+
+async function onElementTriggerBackupSetup(event: MessageEvent<any>, start: () => Promise<void>) {
+    console.debug("Triggering Backup Setup")
+    
+    await accessSecretStorage()
+
+    // Modal.createDialog(RestoreKeyBackupDialog, undefined, undefined, /* priority = */ false, /* static = */ true);
+    // // SetupEncryptionDialog
+}
+
+async function onElementAccessTokenResponse(event: MessageEvent<any>, start: () => Promise<void>) {
+    console.debug("Setting access token."), event.data["mx_access_token"]
+    window.localStorage["mx_access_token"] = event.data["mx_access_token"]
+    window.localStorage["mx_has_access_token"] = true
+
+    console.info("Starting element.");
+    start();
+}
+
+async function onElementUserdataResponse(event: MessageEvent<any>, start: () => Promise<void>) {
+
+    if (!isBootstrapped()) {
+        console.debug("Bootstrapping element.")
+
+        for (var key of ["mx_user_id", "mx_device_id", "mx_hs_url", "mx_is_url"]) {
+            window.localStorage[key] = event.data[key]
+        }
+
+        await ensureIndexDb()
+
+        window.parent.postMessage({type: "elementAccessTokenRequest"}, event.origin);
         return;
     }
 
-    console.info("Requesting element credentials.");
-    window.parent.postMessage({type: "elementRequestCredentials"}, "*");
+    console.debug("Already bootstrapped. Checking if locale matches userdata provide by tine.")
+
+    for (var key of ["mx_user_id", "mx_device_id", "mx_hs_url", "mx_is_url"]) {
+        if (window.localStorage["mx_user_id"] !== undefined && window.localStorage["mx_user_id"] !== event.data[key]) {
+            console.error("Local " + key + " dose not match the one provided from tine. Re login required. Not implemented jet.")
+            return;
+        }
+    }
+
+    console.info("Starting element.");
+    start()
 }
 
-// Checks if element needs to be bootstrapped.
 function isBootstrapped(): boolean {
-    // note: mx_access_token might not in local storage might not be the best check. But for now it should always be set, if bootstrapped
-    return window.localStorage["mx_access_token"] !== undefined;
+    return window.localStorage["mx_device_id"] !== undefined &&  window.localStorage["mx_has_access_token"] === true;
 }
 
-async function bootstrapWithCredentials(credentials: {mx_device_id: string, mx_access_token: string, mx_hs_url: string, mx_is_url: string, mx_user_id: string}, origin: string) {
-    //
-    if (window.localStorage["tine_origin"] === undefined) {
-        window.localStorage["tine_origin"] = origin;
-
-        console.debug("Set allowed localStorage.");
-    }
-
-    if (!isBootstrapped()) {
-        window.localStorage["mx_access_token"] = credentials.mx_access_token;
-        window.localStorage["mx_device_id"] = credentials.mx_device_id;
-        window.localStorage["mx_has_access_token"] = true;
-        window.localStorage["mx_hs_url"] = credentials.mx_hs_url;
-        window.localStorage["mx_is_url"] = credentials.mx_is_url;
-        window.localStorage["mx_user_id"] = credentials.mx_user_id;
-
-        console.debug("Seeded localStorage.");
-        console.debug(credentials);
-    } else {
-        console.error("LocalStorage already seeded. Did not expect bootstrapWithCredentials to be called.");
-    }
-
-    // If necessary, create or update matrix-js-sdk::matrix-sdk-crypto
+async function ensureIndexDb() {
     await new Promise(function(resolve, reject) {
         const request = indexedDB.open("matrix-js-sdk::matrix-sdk-crypto", 12);
         request.onerror = reject

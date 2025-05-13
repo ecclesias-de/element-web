@@ -1,0 +1,19 @@
+0 verbose cli /home/mmertens/.nvm/versions/node/v23.2.0/bin/node /home/mmertens/.nvm/versions/node/v23.2.0/bin/npm
+1 info using npm@10.9.0
+2 info using node@v23.2.0
+3 silly config load:file:/home/mmertens/.nvm/versions/node/v23.2.0/lib/node_modules/npm/npmrc
+4 silly config load:file:/home/mmertens/workspace/github.com/element-hq/element-web/.npmrc
+5 silly config load:file:/home/mmertens/.npmrc
+6 silly config load:file:/home/mmertens/.nvm/versions/node/v23.2.0/etc/npmrc
+7 verbose title npm view webpack-version-file-plugin description dist-tags.latest homepage version time
+8 verbose argv "view" "--json" "--" "webpack-version-file-plugin" "description" "dist-tags.latest" "homepage" "version" "time"
+9 verbose logfile logs-max:10 dir:/home/mmertens/workspace/github.com/element-hq/element-web/npm-cache/_logs/2025-01-14T11_56_30_149Z-
+10 verbose logfile /home/mmertens/workspace/github.com/element-hq/element-web/npm-cache/_logs/2025-01-14T11_56_30_149Z-debug-0.log
+11 silly logfile done cleaning log files
+12 http fetch GET 200 https://registry.npmjs.org/webpack-version-file-plugin 723ms (cache miss)
+13 verbose cwd /home/mmertens/workspace/github.com/element-hq/element-web
+14 verbose os Linux 6.8.0-51-generic
+15 verbose node v23.2.0
+16 verbose npm  v10.9.0
+17 verbose exit 0
+18 info ok

@@ -190,6 +190,8 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                     );
                 }
 
+                store.usePassPhrase();
+
                 return (
                     <div>
                         <p>{_t("encryption|verification|verification_description")}</p>
@@ -221,6 +223,8 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
             } else {
                 message = <p>{_t("encryption|verification|verification_success_without_backup")}</p>;
             }
+            const store = SetupEncryptionStore.sharedInstance();
+            store.done();z
             return (
                 <div>
                     <div className="mx_CompleteSecurity_heroIcon mx_E2EIcon_verified" />

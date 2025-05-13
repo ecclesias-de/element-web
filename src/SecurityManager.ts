@@ -120,6 +120,20 @@ async function getSecretStorageKey(
         throw new Error("Request for non-default 4S key");
     }
 
+    logger.debug(`getSecretStorageKey: trying to get key from tine`);
+    if (true) {
+        // todo: get key form tine 
+        const key = await makeInputToKey(keyInfo)({passphrase: "ilovebananas"});
+
+        if (await MatrixClientPeg.safeGet().secretStorage.checkKey(key, keyInfo)) {
+            logger.debug(`getSecretStorageKey: got key from tine`);
+
+            cacheSecretStorageKey(keyId, keyInfo, key);
+
+            return [keyId, key]
+        }
+    }
+
     logger.debug(`getSecretStorageKey: prompting user for key ${keyId}`);
     const inputToKey = makeInputToKey(keyInfo);
     const { finished } = Modal.createDialog(

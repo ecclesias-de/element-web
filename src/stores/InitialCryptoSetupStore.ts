@@ -11,6 +11,7 @@ import { logger } from "matrix-js-sdk/src/logger";
 import { useEffect, useState } from "react";
 
 import { createCrossSigning } from "../CreateCrossSigning";
+import { MatrixClientPeg } from "../MatrixClientPeg";
 
 type Status = "in_progress" | "complete" | "error" | undefined;
 
@@ -37,7 +38,7 @@ export const useInitialCryptoSetupStatus = (store: InitialCryptoSetupStore): Sta
  * a user registers. Should be transparent to the user, not requiring
  * interaction in most cases.
  * As distinct from SetupEncryptionStore which is for setting up
- * 4S or verifying the device, will always require interaction
+ * 4S or verifying `the device, will always require interaction
  * from the user in some form.
  */
 export class InitialCryptoSetupStore extends EventEmitter {
@@ -102,12 +103,19 @@ export class InitialCryptoSetupStore extends EventEmitter {
         try {
             // Create the user's cross-signing keys
             await createCrossSigning(this.client);
+            logger.error("after createCrossSigning")
 
-            // Check for any existing backup and enable key backup if there isn't one
-            const currentKeyBackup = await cryptoApi.checkKeyBackupAndEnable();
-            if (currentKeyBackup === null) {
-                await cryptoApi.resetKeyBackup();
-            }
+            await cryptoApi.bootstrapSecretStorage({
+                createSecretStorageKey: async () => await MatrixClientPeg.safeGet().getCrypto()!.createRecoveryKeyFromPassphrase("ilovebananas"),
+                setupNewKeyBackup: true,
+            });
+            logger.error("after bootstrapSecretStorage")
+
+            // // Check for any existing backup and enable key backup if there isn't one
+            // const currentKeyBackup = await cryptoApi.checkKeyBackupAndEnable();
+            // if (currentKeyBackup === null) {
+            //     await cryptoApi.resetKeyBackup();
+            // }
 
             this.reset();
 
