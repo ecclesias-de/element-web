@@ -1,18 +1,9 @@
-import { logger } from '@sentry/core';
-import RestoreKeyBackupDialog from '../components/views/dialogs/security/RestoreKeyBackupDialog';
-import { MatrixClientPeg } from '../MatrixClientPeg';
-import Modal from '../Modal';
-import { accessSecretStorage } from '../SecurityManager';
-import { AuthDict, UIAResponse } from 'matrix-js-sdk';
-
 // seeds local storage and index db in necessary and after that start element
 
 // notes on post message security: This script should not need to know origin of embedding page in advanced. Therefore the credential request is send to all origins. The origin of the first elementAccessToken message, will become the new origin. It is stored in window.localStorage["tine_origin"].
 export async function tineBootstrap(start: () => Promise<void>) {
     // for now clear all local state for testing purposes. Later it should be cleaned if the browser is closed / or all relevant information needs to be encrypted 
     // await clearLocalStorageAndIndexDb();
-
-    window.onTest1234 = test1234
 
     window.addEventListener("message", async (event) => {
         console.log(event);
@@ -38,9 +29,12 @@ export async function tineBootstrap(start: () => Promise<void>) {
     });
 
     console.info("Requesting element userdata.")
-    // window.parent.postMessage({type: "elementUserdataRequest"}, "*");
 
-    start();
+    await clearLocalStorageAndIndexDb()
+
+    window.parent.postMessage({type: "elementUserdataRequest"}, "*");
+    // or to skip auto login
+    // start();
 }
 
 function setAllowedOrigin(event: MessageEvent<any>) {
@@ -48,51 +42,6 @@ function setAllowedOrigin(event: MessageEvent<any>) {
         console.debug("Set allowed origin.");
         window.localStorage["tine_origin"] = event.origin;
     }
-}
-
-async function test1234() {
-    const cli = MatrixClientPeg.safeGet();
-    const crypto = cli.getCrypto()!;
-
-    let backupInfo = await crypto.getKeyBackupInfo();
-    if (backupInfo) {
-        logger.debug("eeeeeeeeeeeee: " + backupInfo + " <<<");
-        // proceed anyways for now
-        throw "did not expect backup info" + JSON.stringify(backupInfo)
-    }
-
-    await crypto.bootstrapSecretStorage({
-        createSecretStorageKey: async () => {
-            const passphrase = "element.local.tine-dev.de"
-            const recoveryKey = await MatrixClientPeg.safeGet().getCrypto()!.createRecoveryKeyFromPassphrase(passphrase);
-            return recoveryKey;
-        },
-        setupNewKeyBackup: true,
-        setupNewSecretStorage: true, //force reset
-    });
-
-    await crypto.bootstrapCrossSigning({
-        authUploadDeviceSigningKeys: async (makeRequest: (authData: AuthDict) => Promise<UIAResponse<void>>): Promise<void> => {
-            await makeRequest({
-                type: "m.login.password",
-                identifier: {
-                    type: "m.id.user",
-                    user: MatrixClientPeg.safeGet().getSafeUserId(),
-                },
-                password: "element.local.tine-dev.de", // is the same as recovery key for test accounts, but we need to do another type of login here
-            });
-        },
-        setupNewCrossSigning: true, //force reset
-    });
-}
-
-async function onElementTriggerBackupSetup(event: MessageEvent<any>, start: () => Promise<void>) {
-    console.debug("Triggering Backup Setup")
-    
-    await accessSecretStorage()
-
-    // Modal.createDialog(RestoreKeyBackupDialog, undefined, undefined, /* priority = */ false, /* static = */ true);
-    // // SetupEncryptionDialog
 }
 
 async function onElementAccessTokenResponse(event: MessageEvent<any>, start: () => Promise<void>) {
@@ -112,6 +61,7 @@ async function onElementUserdataResponse(event: MessageEvent<any>, start: () => 
         for (var key of ["mx_user_id", "mx_device_id", "mx_hs_url", "mx_is_url"]) {
             window.localStorage[key] = event.data[key]
         }
+        window.localStorage["must_verify_device"] == true;
 
         await ensureIndexDb()
 
