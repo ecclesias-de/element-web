@@ -120,9 +120,10 @@ async function getSecretStorageKey(
         throw new Error("Request for non-default 4S key");
     }
 
+    // TINE INTEGRATION PATCH START
     logger.debug(`getSecretStorageKey: trying to get key from tine`);
+    // todo: get key form tine 
     if (true) {
-        // todo: get key form tine 
         const key = await makeInputToKey(keyInfo)({passphrase: "ilovebananas"});
 
         if (await MatrixClientPeg.safeGet().secretStorage.checkKey(key, keyInfo)) {
@@ -133,6 +134,7 @@ async function getSecretStorageKey(
             return [keyId, key]
         }
     }
+    // TINE INTEGRATION PATCH END
 
     logger.debug(`getSecretStorageKey: prompting user for key ${keyId}`);
     const inputToKey = makeInputToKey(keyInfo);

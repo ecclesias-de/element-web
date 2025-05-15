@@ -179,6 +179,12 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                             {recoveryKeyPrompt}
                         </AccessibleButton>
                     );
+                    
+                    // TINE INTEGRATION PATCH START
+                    // "click" use recovery key button for user. Our modified getSecretStorageKey function, will automatically use the recovery key,
+                    // if tine provided a correct one. (It should prompt the user if the key dose not work.) We might want to check the correctness here to before auto "clicking" use recovery key.
+                    store.usePassPhrase()
+                    // TINE INTEGRATION PATCH END
                 }
 
                 let verifyButton;
@@ -189,8 +195,6 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                         </AccessibleButton>
                     );
                 }
-
-                store.usePassPhrase();
 
                 return (
                     <div>
@@ -220,11 +224,16 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
             let message: JSX.Element;
             if (this.state.backupInfo) {
                 message = <p>{_t("encryption|verification|verification_success_with_backup")}</p>;
+
+                // TINE INTEGRATION PATCH START
+                // "clicking" done for user if encryption setup succeeded with backup. As we do not want the user to have to interact
+                // with the encryption setup dialog, if everything works. We probably should only auto "click" done, if we automatically
+                // entered the encryption key.
+                this.onDoneClick();
+                // TINE INTEGRATION PATCH END
             } else {
                 message = <p>{_t("encryption|verification|verification_success_without_backup")}</p>;
             }
-            const store = SetupEncryptionStore.sharedInstance();
-            store.done();z
             return (
                 <div>
                     <div className="mx_CompleteSecurity_heroIcon mx_E2EIcon_verified" />

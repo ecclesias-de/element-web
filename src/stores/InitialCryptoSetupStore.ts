@@ -38,7 +38,7 @@ export const useInitialCryptoSetupStatus = (store: InitialCryptoSetupStore): Sta
  * a user registers. Should be transparent to the user, not requiring
  * interaction in most cases.
  * As distinct from SetupEncryptionStore which is for setting up
- * 4S or verifying `the device, will always require interaction
+ * 4S or verifying the device, will always require interaction
  * from the user in some form.
  */
 export class InitialCryptoSetupStore extends EventEmitter {
@@ -103,19 +103,21 @@ export class InitialCryptoSetupStore extends EventEmitter {
         try {
             // Create the user's cross-signing keys
             await createCrossSigning(this.client);
-            logger.error("after createCrossSigning")
 
+            // TINE INTEGRATION PATCH START
+            // Bootstrap secret store on initial login. This only works together with our modified getSecretStorageKey function. Which needs to 
+            // return the same recovery key used here.
             await cryptoApi.bootstrapSecretStorage({
                 createSecretStorageKey: async () => await MatrixClientPeg.safeGet().getCrypto()!.createRecoveryKeyFromPassphrase("ilovebananas"),
                 setupNewKeyBackup: true,
             });
-            logger.error("after bootstrapSecretStorage")
+            // TINE INTEGRATION PATCH END
 
-            // // Check for any existing backup and enable key backup if there isn't one
-            // const currentKeyBackup = await cryptoApi.checkKeyBackupAndEnable();
-            // if (currentKeyBackup === null) {
-            //     await cryptoApi.resetKeyBackup();
-            // }
+            // Check for any existing backup and enable key backup if there isn't one
+            const currentKeyBackup = await cryptoApi.checkKeyBackupAndEnable();
+            if (currentKeyBackup === null) {
+                await cryptoApi.resetKeyBackup();
+            }
 
             this.reset();
 
