@@ -11,7 +11,10 @@ import { logger } from "matrix-js-sdk/src/logger";
 import { useEffect, useState } from "react";
 
 import { createCrossSigning } from "../CreateCrossSigning";
+// TINE INTEGRATION PATCH START
 import { MatrixClientPeg } from "../MatrixClientPeg";
+import { getRecoveryPassword } from "../vector/tine";
+// TINE INTEGRATION PATCH ENDq
 
 type Status = "in_progress" | "complete" | "error" | undefined;
 
@@ -107,8 +110,14 @@ export class InitialCryptoSetupStore extends EventEmitter {
             // TINE INTEGRATION PATCH START
             // Bootstrap secret store on initial login. This only works together with our modified getSecretStorageKey function. Which needs to 
             // return the same recovery key used here.
+            const recoveryPassword = getRecoveryPassword()
+            if (recoveryPassword == null) {
+                // todo: if this fails, the user can retry or cancel. canceling should not be an option. we want to force this to be setup, even
+                // if this means a user can not use matrix if there is an error. They should contact support.
+                throw "Recovery password is null"
+            }
             await cryptoApi.bootstrapSecretStorage({
-                createSecretStorageKey: async () => await MatrixClientPeg.safeGet().getCrypto()!.createRecoveryKeyFromPassphrase("ilovebananas"),
+                createSecretStorageKey: async () => await MatrixClientPeg.safeGet().getCrypto()!.createRecoveryKeyFromPassphrase(recoveryPassword),
                 setupNewKeyBackup: true,
             });
             // TINE INTEGRATION PATCH END

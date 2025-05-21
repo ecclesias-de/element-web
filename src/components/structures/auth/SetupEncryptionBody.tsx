@@ -179,7 +179,7 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                             {recoveryKeyPrompt}
                         </AccessibleButton>
                     );
-                    
+
                     // TINE INTEGRATION PATCH START
                     // "click" use recovery key button for user. Our modified getSecretStorageKey function, will automatically use the recovery key,
                     // if tine provided a correct one. (It should prompt the user if the key dose not work.) We might want to check the correctness here to before auto "clicking" use recovery key.
