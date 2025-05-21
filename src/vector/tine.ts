@@ -41,6 +41,8 @@ function setAllowedOrigin(event: MessageEvent<any>) {
 let recoveryPassword: string | null = null
 
 async function onElementUserdataResponse(event: MessageEvent<any>, start: () => Promise<void>) {
+    // todo check if another user is singed in, and then handle that.
+
     window.localStorage.setItem("mx_hs_url", event.data.mx_hs_url)
     window.localStorage.setItem("mx_is_url", event.data.mx_is_url)
     window.localStorage.setItem("mx_user_id", event.data.mx_user_id)
