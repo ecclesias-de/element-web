@@ -266,6 +266,17 @@ export async function attemptDelegatedAuthLogin(
     defaultDeviceDisplayName?: string,
     fragmentAfterLogin?: string,
 ): Promise<boolean> {
+    // const credentials: IMatrixClientCreds = {
+    //     homeserverUrl: "https://matrix.local.tine-dev.de",
+    //     userId: "@monkey34:matrix.local.tine-dev.de",
+    //     deviceId: "SAJRWFZRMN",
+    //     accessToken: "syt_bW9ua2V5MzQ_dPWnfHDRouzHcXhUgZWc_2FNRmb",
+    //     guest: false,
+    //     freshLogin: true,
+    // }
+    // await onSuccessfulDelegatedAuthLogin(credentials);
+    // return true;
+
     if (queryParams.code && queryParams.state) {
         console.log("We have OIDC params - attempting OIDC login");
         return attemptOidcNativeLogin(queryParams);
