@@ -13,6 +13,9 @@ export async function tineBootstrap(start: () => Promise<void>) {
         console.debug(event);
 
         switch (event.data.type) {
+            case "elementUserdataResponse":
+                onElementUserdataResponse(event, start)
+                break;
             default:
                 console.debug("Received message of unknown type.")
                 return;
@@ -23,7 +26,7 @@ export async function tineBootstrap(start: () => Promise<void>) {
 
     
     console.info("Requesting element userdata.")
-    start()
+    window.parent.postMessage({type: "elementUserdataRequest"}, "*");
 }
 
 function setAllowedOrigin(event: MessageEvent<any>) {
@@ -31,4 +34,18 @@ function setAllowedOrigin(event: MessageEvent<any>) {
         console.debug("Set allowed origin to: " + event.origin);
         window.localStorage["tine_origin"] = event.origin;
     }
+}
+
+async function onElementUserdataResponse(event: MessageEvent<any>, start: () => Promise<void>) {
+    // todo check if another user is singed in, and then handle that.
+
+    window.localStorage.setItem("mx_hs_url", event.data.mx_hs_url)
+    window.localStorage.setItem("mx_is_url", event.data.mx_is_url)
+    window.localStorage.setItem("mx_user_id", event.data.mx_user_id)
+    window.localStorage.setItem("mx_device_id", event.data.mx_device_id)
+    window.localStorage.setItem("mx_access_token", event.data.mx_access_token)
+    window.localStorage.setItem("mx_has_access_token", String(true))
+
+    console.info("Starting element.");
+    start()
 }
