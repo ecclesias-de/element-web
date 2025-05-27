@@ -384,6 +384,11 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         const firstScreen = this.screenAfterLogin ? this.screenAfterLogin.screen : null;
         const restoreSuccess = await this.loadSession();
         if (restoreSuccess) {
+            // TINE INTEGRATION - auto login: fix e2ee setup - PATCH START
+            // run e2e setup / completion event when loading restring session from disk.
+            // our integration setup local storage like a new login, but dose not setup e2e / s4
+            await this.postLoginSetup()
+            // TINE INTEGRATION - PATCH END
             return;
         }
 
