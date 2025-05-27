@@ -20,6 +20,9 @@ import EncryptionPanel from "../../views/right_panel/EncryptionPanel";
 import AccessibleButton, { type ButtonEvent } from "../../views/elements/AccessibleButton";
 import Spinner from "../../views/elements/Spinner";
 import { ResetIdentityDialog } from "../../views/dialogs/ResetIdentityDialog";
+// TINE INTEGRATION - PATCH START
+import { onEncryptionKeysLostFailed, onSetupEncryptionDone } from "../../../vector/tine";
+// TINE INTEGRATION - PATCH END
 
 function keyHasPassphrase(keyInfo: SecretStorageKeyDescription): boolean {
     return Boolean(keyInfo.passphrase && keyInfo.passphrase.salt && keyInfo.passphrase.iterations);
@@ -150,6 +153,9 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
             );
         } else if (phase === Phase.Intro) {
             if (lostKeys) {
+                // TINE INTEGRATION - encryption setup error messages - PATCH START
+                onEncryptionKeysLostFailed()
+                // TINE INTEGRATION - PATCH END
                 return (
                     <div>
                         <p>{_t("encryption|verification|no_key_or_device")}</p>
@@ -169,6 +175,15 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                 } else if (store.keyInfo) {
                     recoveryKeyPrompt = _t("encryption|verification|verify_using_key");
                 }
+                // TINE INTEGRATION - recovery key management - PATCH START
+                // On the first reload of a freshly logged in client store.keyInfo in null. The keys should have been set. Fixing the problem seems evolved.
+                // It probably some kind of race condition. While debugging it works, but is really slow (Multiple seconds per step).
+                // "FIX": If cross signin is set up (Condition to get here) and the key is null we just reload the page.
+                else {
+                    console.warn("TINE-INTEGRATION: SetupEncryption: setting up encryption locally, but keyInfo is empty. This is a know problem with our patch, on the first reload of a new client.")
+                    window.location.reload();
+                }
+                // TINE INTEGRATION - PATCH END
 
                 let useRecoveryKeyButton;
                 if (recoveryKeyPrompt) {
@@ -177,6 +192,12 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                             {recoveryKeyPrompt}
                         </AccessibleButton>
                     );
+
+                    // TINE INTEGRATION - recovery key management - PATCH START
+                    // "click" use recovery key button for user. Our modified getSecretStorageKey function, will automatically use the recovery key,
+                    // if tine provided a correct one. (It should prompt the user if the key dose not work.) We might want to check the correctness here to before auto "clicking" use recovery key.
+                    store.usePassPhrase()
+                    // TINE INTEGRATION - PATCH END
                 }
 
                 let verifyButton;
@@ -216,6 +237,14 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
             let message: JSX.Element;
             if (this.state.backupInfo) {
                 message = <p>{_t("encryption|verification|verification_success_with_backup")}</p>;
+
+                // TINE INTEGRATION - recovery key management - PATCH START
+                // "clicking" done for user if encryption setup succeeded with backup. As we do not want the user to have to interact
+                // with the encryption setup dialog, if everything works. We probably should only auto "click" done, if we automatically
+                // entered the encryption key.
+                this.onDoneClick();
+                onSetupEncryptionDone()
+                // TINE INTEGRATION - PATCH END
             } else {
                 message = <p>{_t("encryption|verification|verification_success_without_backup")}</p>;
             }
