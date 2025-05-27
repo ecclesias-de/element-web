@@ -1,6 +1,9 @@
 import { HAS_ACCESS_TOKEN_STORAGE_KEY, persistAccessTokenInStorage } from "../utils/tokens/tokens";
 import WebPlatform from "./platform/WebPlatform";
 
+let recoveryPassword: string | undefined = undefined
+let recoveryKey: string | undefined = undefined
+
 // notes on post message security: This script should not need to know origin of embedding page in advanced. Therefore
 // the user data request must be send to all origins. The origin of the first successfully handled response, will become the
 // new origin. It is stored in window.localStorage["tine_origin"].
@@ -44,6 +47,9 @@ async function onElementBootstrapdataResponse(event: MessageEvent<any>, start: (
         onLocalStorageUseridDoseNotMatch(window.localStorage.getItem("mx_user_id"), event.data.mx_user_id)
         return
     }
+    
+    recoveryPassword = event.data.recovery_password
+    recoveryKey = event.data.recovery_key
 
     if (window.localStorage.getItem(HAS_ACCESS_TOKEN_STORAGE_KEY) != "true") {
         console.debug("TINE-INTEGRATION: bootstrap: Has access token == false")
@@ -74,10 +80,42 @@ async function onElementLogindataResponse(event: MessageEvent<any>, start: () =>
     start()
 }
 
+export function getRecoveryData(): {passphrase: string | undefined, recoveryKey: string | undefined} {
+    return {passphrase: recoveryPassword, recoveryKey}
+}
+
+export function onRecoveryKeyCheckFailed() {
+    window.parent.postMessage({
+        type: "elementStartupFailure",
+        failure: "recoveryKeyIncorrect"
+    }, window.localStorage["tine_origin"]);
+}
+
+export function onMakeInputToKeyFailed(hint?: string) {
+    window.parent.postMessage({
+        type: "elementStartupFailure",
+        failure: "recoveryDataInvalid",
+        hint: hint,
+    }, window.localStorage["tine_origin"]);
+}
+
 export function onLocalStorageUseridDoseNotMatch(local: string | null, event: string) {
     window.parent.postMessage({
         type: "elementStartupFailure",
         failure: "localUserDoseNotMatch",
         hint: String(local) + " != " + event
+    }, window.localStorage["tine_origin"]);
+}
+
+export function onEncryptionKeysLostFailed() {
+    window.parent.postMessage({
+        type: "elementStartupFailure",
+        failure: "encryptionKeysLost"
+    }, window.localStorage["tine_origin"]);
+}
+
+export function onSetupEncryptionDone() {
+    window.parent.postMessage({
+        type: "elementSetupEncryptionDone",
     }, window.localStorage["tine_origin"]);
 }
