@@ -1,6 +1,9 @@
 import { HAS_ACCESS_TOKEN_STORAGE_KEY, persistAccessTokenInStorage } from "../utils/tokens/tokens";
 import WebPlatform from "./platform/WebPlatform";
 
+let recoveryPassword: string | undefined = undefined
+let recoveryKey: string | undefined = undefined
+
 // notes on post message security: This script should not need to know origin of embedding page in advanced. Therefore
 // the user data request must be send to all origins. The origin of the first successfully handled response, will become the
 // new origin. It is stored in window.localStorage["tine_origin"].
@@ -16,6 +19,9 @@ export async function tineBootstrap(start: () => Promise<void>) {
         onLocalStorageUseridDoseNotMatch(window.localStorage.getItem("mx_user_id"), bootstrapdata.mx_user_id)
         return
     }
+    
+    recoveryPassword = bootstrapdata.recovery_password
+    recoveryKey = bootstrapdata.recovery_key
 
     if (window.localStorage.getItem(HAS_ACCESS_TOKEN_STORAGE_KEY) != "true") {
         console.debug("TINE-INTEGRATION: bootstrap: Has access token == false")
@@ -42,6 +48,25 @@ export async function tineBootstrap(start: () => Promise<void>) {
     start()
 }
 
+export function getRecoveryData(): {passphrase: string | undefined, recoveryKey: string | undefined} {
+    return {passphrase: recoveryPassword, recoveryKey}
+}
+
+export function onRecoveryKeyCheckFailed() {
+    TinePostMessageRouter.Instance.postMessage({
+        type: "elementStartupFailure",
+        failure: "recoveryKeyIncorrect"
+    });
+}
+
+export function onMakeInputToKeyFailed(hint?: string) {
+    TinePostMessageRouter.Instance.postMessage({
+        type: "elementStartupFailure",
+        failure: "recoveryDataInvalid",
+        hint: hint,
+    });
+}
+
 export function onLocalStorageUseridDoseNotMatch(local: string | null, event: string) {
     TinePostMessageRouter.Instance.postMessage({
         type: "elementStartupFailure",
@@ -50,6 +75,18 @@ export function onLocalStorageUseridDoseNotMatch(local: string | null, event: st
     }, window.localStorage["tine_origin"]);
 }
 
+export function onEncryptionKeysLostFailed() {
+    TinePostMessageRouter.Instance.postMessage({
+        type: "elementStartupFailure",
+        failure: "encryptionKeysLost"
+    });
+}
+
+export function onSetupEncryptionDone() {
+    TinePostMessageRouter.Instance.postMessage({
+        type: "elementSetupEncryptionDone",
+    });
+}
 class TinePostMessageRouter
 {
     private static _instance: TinePostMessageRouter;
