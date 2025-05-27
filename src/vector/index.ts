@@ -15,6 +15,9 @@ import { shouldPolyfill as shouldPolyFillIntlSegmenter } from "@formatjs/intl-se
 
 // These are things that can run before the skin loads - be careful not to reference the react-sdk though.
 import { parseQsFromFragment } from "./url_utils";
+// TINE INTEGRATION - bootstrap - PATCH START
+import { tineBootstrap } from "./tine";
+// TINE INTEGRATION - PATCH END
 import "./modernizr";
 
 // Import shared components CSS
@@ -243,7 +246,11 @@ async function start(): Promise<void> {
     }
 }
 
-start().catch((err) => {
+
+// TINE INTEGRATION - bootstrap - PATCH START
+// call tine bootstrap before starting element
+tineBootstrap(() => start().catch((err) => {
+// TINE INTEGRATION - PATCH END
     // If we get here, things have gone terribly wrong and we cannot load the app javascript at all.
     // Show a different, very simple iframed-static error page. Or actually, one of two different ones
     // depending on whether the browser is supported (ie. we think we should be able to load but
@@ -266,4 +273,4 @@ start().catch((err) => {
     iframe.style.bottom = "0";
     iframe.style.border = "0";
     document.getElementById("matrixchat")?.appendChild(iframe);
-});
+}));
