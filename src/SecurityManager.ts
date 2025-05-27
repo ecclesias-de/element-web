@@ -20,7 +20,7 @@ import { ModuleRunner } from "./modules/ModuleRunner";
 import QuestionDialog from "./components/views/dialogs/QuestionDialog";
 import InteractiveAuthDialog from "./components/views/dialogs/InteractiveAuthDialog";
 // TINE INTEGRATION PATCH START
-import { getRecoveryPassword } from "./vector/tine";
+import { getRecoveryData } from "./vector/tine";
 // TINE INTEGRATION PATCH END
 
 // This stores the secret storage private keys in memory for the JS SDK. This is
@@ -127,9 +127,9 @@ async function getSecretStorageKey(
     // autofill recovery password, if it fails element will show a prompt to request the user to enter
     // the password or upload there key
     logger.debug(`getSecretStorageKey: trying to get key from tine`);
-    const recoveryPassword = getRecoveryPassword()
-    if (recoveryPassword != null) {
-        const key = await makeInputToKey(keyInfo)({passphrase: recoveryPassword});
+    const recoveryData = getRecoveryData()
+    if (recoveryData.passphrase || recoveryData.recoveryKey) {
+        const key = await makeInputToKey(keyInfo)(recoveryData);
 
         if (await MatrixClientPeg.safeGet().secretStorage.checkKey(key, keyInfo)) {
             logger.debug(`getSecretStorageKey: got key from tine`);

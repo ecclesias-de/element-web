@@ -1,5 +1,8 @@
 // seeds local storage and after that start element
 
+import { GeneratedSecretStorageKey } from "matrix-js-sdk/src/crypto-api";
+import { MatrixClientPeg } from "../MatrixClientPeg";
+
 // notes on post message security: This script should not need to know origin of embedding page in advanced. Therefore
 // the user data request must be send to all origins. The origin of the first successfully handled response, will become the
 // new origin. It is stored in window.localStorage["tine_origin"].
@@ -38,7 +41,9 @@ function setAllowedOrigin(event: MessageEvent<any>) {
     }
 }
 
-let recoveryPassword: string | null = null
+let recoveryPassword: string | undefined = undefined
+let recoveryKey: string | undefined = undefined
+
 
 async function onElementUserdataResponse(event: MessageEvent<any>, start: () => Promise<void>) {
     // todo check if another user is singed in, and then handle that.
@@ -51,13 +56,12 @@ async function onElementUserdataResponse(event: MessageEvent<any>, start: () => 
     window.localStorage.setItem("mx_has_access_token", String(true))
 
     recoveryPassword = event.data.recovery_password
+    recoveryKey = event.data.recovery_key
 
     console.info("Starting element.");
     start()
 }
 
-// maybe we want to use the element addon stuff, if we save the key in memory anyways => no element addon
-// dose return a raw key. only do that if we intend to upstream parts of this
-export function getRecoveryPassword(): string | null {
-    return recoveryPassword
+export function getRecoveryData(): {passphrase: string | undefined, recoveryKey: string | undefined} {
+    return {passphrase: recoveryPassword, recoveryKey}
 }
