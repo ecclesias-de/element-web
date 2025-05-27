@@ -1,0 +1,46 @@
+<script type="text/javascript">
+    const user_id = "@monkey47:matrix.local.tine-dev.de"
+    const access_token = "syt_bW9ua2V5NDc_dthVleLQkvfajkSPFUoA_0bNhFR"
+    const device_id = "OMDRNGKDPK"
+
+    function onElementBootstrapdataRequest(event) {
+        event.source.postMessage({
+            type: "elementBootstrapdataResponse",
+            mx_user_id: user_id,
+            recovery_password: "ilovebananas",
+            recovery_key: null,
+        }, event.origin);
+        console.log("IFRAME: Send event elementBootstrapdataResponse")
+    }
+
+    function onElementLogindataRequest(event) {
+        event.source.postMessage({
+            type: "elementLogindataResponse",
+            mx_device_id: device_id,
+            mx_access_token: access_token,
+            mx_user_id: user_id,
+            mx_hs_url: "https://matrix.local.tine-dev.de",
+            mx_is_url: "",
+        }, event.origin);
+        console.log("IFRAME: Send event elementLogindataResponse")
+    }
+
+    window.addEventListener("message", async (event) => {
+        console.log("IFRAME: received event:")
+        console.log(event);
+
+        switch (event.data.type) {
+            case "elementBootstrapdataRequest":
+                onElementBootstrapdataRequest(event)
+                break;
+            case "elementLogindataRequest":
+                onElementLogindataRequest(event)
+                break;
+            default:
+                console.debug("IFRAME: Received message of unknown type.")
+                break;
+        }
+    });
+</script>
+
+<iframe src="http://localhost:8080" style="height: 95vh; width: 99vw;"></iframe>
