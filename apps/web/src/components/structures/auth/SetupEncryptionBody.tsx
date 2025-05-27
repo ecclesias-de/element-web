@@ -29,6 +29,9 @@ import ExternalLink from "../../views/elements/ExternalLink";
 import dispatcher from "../../../dispatcher/dispatcher";
 import E2EIcon from "../../views/rooms/E2EIcon.tsx";
 import { E2EStatus } from "../../../utils/ShieldUtils.ts";
+// TINE INTEGRATION - PATCH START
+import { onEncryptionKeysLostFailed, onSetupEncryptionDone } from "../../../vector/tine";
+// TINE INTEGRATION - PATCH END
 
 interface IProps {
     onFinished: () => void;
@@ -186,6 +189,12 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                         {_t("encryption|verification|use_recovery_key")}
                     </Button>
                 );
+
+                // TINE INTEGRATION - recovery key management - PATCH START
+                // "click" use recovery key button for user. Our modified getSecretStorageKey function, will automatically use the recovery key,
+                // if tine provided a correct one. (It should prompt the user if the key dose not work.) We might want to check the correctness here to before auto "clicking" use recovery key.
+                store.usePassPhrase()
+                // TINE INTEGRATION - PATCH END
             }
 
             let signOutButton;
@@ -195,6 +204,10 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                         {_t("action|sign_out")}
                     </Button>
                 );
+            }
+
+            if (verifyButton === undefined && useRecoveryKeyButton === undefined && signOutButton === undefined) {
+                onEncryptionKeysLostFailed()
             }
 
             return (
@@ -225,6 +238,14 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
             let message: JSX.Element;
             if (this.state.backupInfo) {
                 message = <p>{_t("encryption|verification|verification_success_with_backup")}</p>;
+
+                // TINE INTEGRATION - recovery key management - PATCH START
+                // "clicking" done for user if encryption setup succeeded with backup. As we do not want the user to have to interact
+                // with the encryption setup dialog, if everything works. We probably should only auto "click" done, if we automatically
+                // entered the encryption key.
+                this.onDoneClick();
+                onSetupEncryptionDone()
+                // TINE INTEGRATION - PATCH END
             } else {
                 message = <p>{_t("encryption|verification|verification_success_without_backup")}</p>;
             }
