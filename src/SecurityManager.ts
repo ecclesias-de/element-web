@@ -19,6 +19,9 @@ import AccessSecretStorageDialog, { KeyParams } from "./components/views/dialogs
 import { ModuleRunner } from "./modules/ModuleRunner";
 import QuestionDialog from "./components/views/dialogs/QuestionDialog";
 import InteractiveAuthDialog from "./components/views/dialogs/InteractiveAuthDialog";
+// TINE INTEGRATION - recovery key management - PATCH START
+import { getRecoveryData } from "./vector/tine";
+// TINE INTEGRATION - PATCH END
 
 // This stores the secret storage private keys in memory for the JS SDK. This is
 // only meant to act as a cache to avoid prompting the user multiple times
@@ -120,6 +123,23 @@ async function getSecretStorageKey(
         throw new Error("Request for non-default 4S key");
     }
 
+    // TINE INTEGRATION - recovery key management - PATCH START
+    // autofill recovery password, if it fails element will show a prompt to request the user to enter
+    // the password or upload there key
+    logger.debug(`getSecretStorageKey: trying to get key from tine`);
+    const recoveryData = getRecoveryData()
+    if (recoveryData.passphrase || recoveryData.recoveryKey) {
+        const key = await makeInputToKey(keyInfo)(recoveryData);
+
+        if (await MatrixClientPeg.safeGet().secretStorage.checkKey(key, keyInfo)) {
+            logger.debug(`getSecretStorageKey: got key from tine`);
+
+            cacheSecretStorageKey(keyId, keyInfo, key);
+
+            return [keyId, key]
+        }
+    }
+    // TINE INTEGRATION - PATCH END
     logger.debug(`getSecretStorageKey: prompting user for key ${keyId}`);
     const inputToKey = makeInputToKey(keyInfo);
     const { finished } = Modal.createDialog(

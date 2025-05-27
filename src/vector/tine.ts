@@ -36,6 +36,10 @@ function setAllowedOrigin(event: MessageEvent<any>) {
     }
 }
 
+let recoveryPassword: string | undefined = undefined
+let recoveryKey: string | undefined = undefined
+
+
 async function onElementUserdataResponse(event: MessageEvent<any>, start: () => Promise<void>) {
     // todo check if another user is singed in, and then handle that.
 
@@ -46,6 +50,13 @@ async function onElementUserdataResponse(event: MessageEvent<any>, start: () => 
     window.localStorage.setItem("mx_access_token", event.data.mx_access_token)
     window.localStorage.setItem("mx_has_access_token", String(true))
 
+    recoveryPassword = event.data.recovery_password
+    recoveryKey = event.data.recovery_key
+
     console.info("Starting element.");
     start()
+}
+
+export function getRecoveryData(): {passphrase: string | undefined, recoveryKey: string | undefined} {
+    return {passphrase: recoveryPassword, recoveryKey}
 }
