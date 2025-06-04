@@ -60,3 +60,18 @@ async function onElementUserdataResponse(event: MessageEvent<any>, start: () => 
 export function getRecoveryData(): {passphrase: string | undefined, recoveryKey: string | undefined} {
     return {passphrase: recoveryPassword, recoveryKey}
 }
+
+export function onRecoveryKeyCheckFailed() {
+    window.parent.postMessage({
+        type: "elementStartupFailure",
+        failure: "recoveryKeyIncorrect"
+    }, window.localStorage["tine_origin"]);
+}
+
+export function onMakeInputToKeyFailed(hint?: string) {
+    window.parent.postMessage({
+        type: "elementStartupFailure",
+        failure: "recoveryDataInvalid",
+        hint: hint,
+    }, window.localStorage["tine_origin"]);
+}

@@ -3,13 +3,17 @@
         event.source.postMessage({
             type: "elementUserdataResponse",
             mx_device_id: "OMDRNGKDPK",
-            mx_access_token: "syt_bW9ua2V5NDc_dthVleLQkvfajkSPFUoA_0bNhFR",
-            mx_user_id: "@monkey47:matrix.local.tine-dev.de",
+            mx_access_token: "syt_bW9ua2V5NTI_YKAWAUVaMc",
+            mx_user_id: "@monkey52:matrix.local.tine-dev.de",
             mx_hs_url: "https://matrix.local.tine-dev.de",
             mx_is_url: "",
             recovery_password: "ilovebananas",
-            recovery_key: undefined,
+            recovery_key: null,
         }, event.origin);
+    }
+
+    function onElementStartupFailure(event) {
+        alert(event.data.failure + " " + event.data.hint)
     }
 
     window.addEventListener("message", async (event) => {
@@ -19,6 +23,9 @@
             case "elementUserdataRequest":
                 onElementUserdataRequest(event)
                 break;
+            case "elementStartupFailure":
+                onElementStartupFailure(event)
+                break
             default:
                 console.debug("Received message of unknown type.")
                 break;
