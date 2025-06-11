@@ -83,6 +83,20 @@ export async function encryptPickleKey(
 
     const additionalData = getPickleAdditionalData(userId, deviceId);
     const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData }, cryptoKey, pickleKey);
+
+    // TINE INTEGRATION - bind pickle key to session - PATCH START
+    // We encrypt the pickleKey a second time, with a key stored in session store. This "locks" element when the session store is cleared e.g.
+    // the browser is closed. The tine session key is store in tine. Our wrapper can set it again to resume the "session".
+    // Adding a second layer of encryption, should not weaken the previous assumptions.
+    const sessionKeyEncoded = sessionStorage.getItem('tine_session_encryption_key')
+    if (sessionKeyEncoded) {
+        const sessionKey = await crypto.subtle.importKey("raw", Uint8Array.fromBase64!(sessionKeyEncoded), "AES-GCM", false, ["encrypt", "decrypt"]);
+
+        const encrypted2 = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, sessionKey, encrypted);
+
+        return { encrypted: encrypted2, iv, cryptoKey }
+    }
+    // TINE INTEGRATION - PATCH END
     return { encrypted, iv, cryptoKey };
 }
 
@@ -111,6 +125,15 @@ export async function buildAndEncodePickleKey(
     }
 
     try {
+        // TINE INTEGRATION - bind pickle key to session - PATCH START
+        // see comment in encryptPickleKey patch
+        const sessionKeyEncoded = sessionStorage.getItem('tine_session_encryption_key')
+        if (sessionKeyEncoded) {
+            const sessionKey = await crypto.subtle.importKey("raw", Uint8Array.fromBase64!(sessionKeyEncoded), "AES-GCM", false, ["encrypt", "decrypt"]);
+
+            data.encrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: data.iv }, sessionKey, data.encrypted);
+        }
+        // TINE INTEGRATION - PATCH END
         const additionalData = getPickleAdditionalData(userId, deviceId);
         const pickleKeyBuf = await crypto.subtle.decrypt(
             { name: "AES-GCM", iv: data.iv, additionalData },
