@@ -19,7 +19,10 @@ export async function tineBootstrap(start: () => Promise<void>) {
         onLocalStorageUseridDoseNotMatch(window.localStorage.getItem("mx_user_id"), bootstrapdata.mx_user_id)
         return
     }
-    
+
+    // generate => window.crypto.getRandomValues(new Uint8Array(32)).toBase64!()
+    window.sessionStorage.setItem("tine_session_encryption_key", bootstrapdata.session_key)
+
     recoveryPassword = bootstrapdata.recovery_password
     recoveryKey = bootstrapdata.recovery_key
 
