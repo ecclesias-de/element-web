@@ -47,7 +47,10 @@ async function onElementBootstrapdataResponse(event: MessageEvent<any>, start: (
         onLocalStorageUseridDoseNotMatch(window.localStorage.getItem("mx_user_id"), event.data.mx_user_id)
         return
     }
-    
+
+    // generate => window.crypto.getRandomValues(new Uint8Array(32)).toBase64!()
+    window.sessionStorage.setItem("tine_session_encryption_key", event.data.session_key)
+
     recoveryPassword = event.data.recovery_password
     recoveryKey = event.data.recovery_key
 
