@@ -1,5 +1,5 @@
 import { HAS_ACCESS_TOKEN_STORAGE_KEY, persistAccessTokenInStorage } from "../utils/tokens/tokens";
-import WebPlatform from "./platform/WebPlatform";
+import { TinePlatform } from "./platform/TinePlatform";
 
 let recoveryPassword: string | undefined = undefined
 let recoveryKey: string | undefined = undefined
@@ -38,7 +38,7 @@ export async function tineBootstrap(start: () => Promise<void>) {
         window.localStorage.setItem("mx_user_id", logindata.mx_user_id)
         window.localStorage.setItem("mx_device_id", logindata.mx_device_id)
 
-        const platform = new WebPlatform()
+        const platform = new TinePlatform()
         let pickleKey = await platform.getPickleKey(logindata.mx_user_id, logindata.mx_device_id)
         if (!pickleKey) {
             pickleKey = await platform.createPickleKey(logindata.mx_user_id, logindata.mx_device_id)
@@ -90,7 +90,8 @@ export function onSetupEncryptionDone() {
         type: "elementSetupEncryptionDone",
     });
 }
-class TinePostMessageRouter
+
+export class TinePostMessageRouter
 {
     private static _instance: TinePostMessageRouter;
     private callbacks: Map<string, (message: any) => void> = new Map()
