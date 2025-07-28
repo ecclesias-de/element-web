@@ -23,6 +23,9 @@ import ElectronPlatform from "./platform/ElectronPlatform";
 import PWAPlatform from "./platform/PWAPlatform";
 import WebPlatform from "./platform/WebPlatform";
 import { initRageshake, initRageshakeStore } from "./rageshakesetup";
+// TINE-INTEGRATION - PATCH START
+import { TinePlatform } from "./platform/TinePlatform";
+// TINE-INTEGRATION - PATCH END
 
 export const rageshakePromise = initRageshake();
 
@@ -34,8 +37,10 @@ export function preparePlatform(): void {
         logger.log("Using PWA platform");
         PlatformPeg.set(new PWAPlatform());
     } else {
-        logger.log("Using Web platform");
-        PlatformPeg.set(new WebPlatform());
+        // TINE-INTEGRATION - PATCH START
+        logger.log("Using Tine platform");
+        PlatformPeg.set(new TinePlatform());
+        // TINE-INTEGRATION - PATCH END
     }
 }
 
