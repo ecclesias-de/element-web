@@ -146,7 +146,7 @@ export class TinePostMessageRouter
 
             window.parent.postMessage(Object.assign({
                 eventUUID: uuid,
-            }, message), window.localStorage["tine_origin"]);
+            }, message), this.tineOrigin);
         })
     }
 
