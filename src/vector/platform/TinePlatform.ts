@@ -9,6 +9,8 @@ import WebPlatform from "./WebPlatform";
 import { TinePostMessageRouter } from "../tine";
 
 export class TinePlatform extends WebPlatform {
+    private notificationGrantCache: boolean = false
+
     public displayNotification(
         title: string,
         msg: string,
@@ -52,13 +54,17 @@ export class TinePlatform extends WebPlatform {
     }
 
     public maySendNotifications(): boolean {
-        return true
+        return this.notificationGrantCache
     }
 
     public async requestNotificationPermission(): Promise<string> {
-        return (await TinePostMessageRouter.Instance.postMessage({
+        const grant = (await TinePostMessageRouter.Instance.postMessage({
             type: "elementNotificationPermissionRequest",
         })).grant
+
+        this.notificationGrantCache = grant == "granted"
+
+        return grant
     }
 
     public setNotificationCount(count: number): void {
