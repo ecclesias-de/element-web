@@ -32,6 +32,12 @@ export async function tineBootstrap(start: () => Promise<void>) {
         const logindata = await tpmr.postMessage({type: "elementLogindataRequest"})
 
         console.debug("TINE-INTEGRATION: bootstrap: Setting up user.");
+        // We may be able to move this in to a module, when the new module api supports auth.
+        // The old module api dispatches Action.OverwriteLogin, which in turn calls doSetLoggedIn.
+        // doSetLoggedIn is also called by restore session, right after loading the values we wrote
+        // to localstorage and index db. doSetLoggedIn will persist the credentials afterwards.
+        // That the module would probably check, if the user matches the tine provided one and that
+        // has access token is true, and otherwise call doSetLoggedIn.
         window.localStorage.setItem("mx_hs_url",logindata.mx_hs_url)
         window.localStorage.setItem("mx_is_url", logindata.mx_is_url)
 
