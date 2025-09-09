@@ -1,5 +1,9 @@
+import { deriveRecoveryKeyFromPassphrase } from "matrix-js-sdk/lib/crypto-api";
+import { MatrixClientPeg } from "../MatrixClientPeg";
 import { HAS_ACCESS_TOKEN_STORAGE_KEY, persistAccessTokenInStorage } from "../utils/tokens/tokens";
 import { TinePlatform } from "./platform/TinePlatform";
+import { decodeRecoveryKey } from "matrix-js-sdk/src/crypto-api";
+import { SecretStorageKeyDescriptionAesV1 } from "matrix-js-sdk/src/secret-storage";
 
 let recoveryPassword: string | undefined = undefined
 let recoveryKey: string | undefined = undefined
@@ -50,11 +54,59 @@ export async function tineBootstrap(start: () => Promise<void>) {
             pickleKey = await platform.createPickleKey(logindata.mx_user_id, logindata.mx_device_id)
         }
         persistAccessTokenInStorage(logindata.mx_access_token, pickleKey!)
-
     }
 
     console.debug("TINE-INTEGRATION: bootstrap: Starting element.");
     start()
+
+    tpmr.registerFunction('checkRecoveryDatumRequest', 'checkRecoveryDatumResponse', (message: any) => checkRecoveryDatum(message.recoveryDatum))
+}
+
+async function checkRecoveryDatum(recoverDatum: string): Promise<[boolean, string]> {
+    const cli = MatrixClientPeg.safeGet();
+
+    const defaultKeyId = await cli.secretStorage.getDefaultKeyId();
+    if (defaultKeyId === null) {
+        return [false, '']
+    }
+
+    const keyInfo = await cli.getAccountDataFromServer(`m.secret_storage.key.${defaultKeyId}`)
+    if (keyInfo === null) {
+        return [false, '']
+    }
+
+    if (await checkRecoveryPassword(keyInfo, recoverDatum)) {
+        return [true, 'password']
+    }
+
+    if (await checkRecoveryKey(keyInfo, recoverDatum)) {
+        return [true, 'key']
+    }
+
+    return [false, '']
+}
+
+async function checkRecoveryPassword(keyInfo: SecretStorageKeyDescriptionAesV1, passphrase: string): Promise<boolean> {
+    const key = await deriveRecoveryKeyFromPassphrase(passphrase, keyInfo.passphrase.salt, keyInfo.passphrase.iterations)
+    if (key === null) {
+        return false
+    }
+
+    try {
+        return MatrixClientPeg.safeGet().secretStorage.checkKey(key, keyInfo)
+    } catch {
+        return false
+    }
+}
+
+async function checkRecoveryKey(keyInfo: SecretStorageKeyDescriptionAesV1, recoveryKey: string) {
+    try {
+        const key = decodeRecoveryKey(recoveryKey)
+
+        return MatrixClientPeg.safeGet().secretStorage.checkKey(key, keyInfo)
+    } catch {
+        return false
+    }
 }
 
 export function getRecoveryData(): {passphrase: string | undefined, recoveryKey: string | undefined} {
@@ -101,6 +153,7 @@ export class TinePostMessageRouter
 {
     private static _instance: TinePostMessageRouter;
     private callbacks: Map<string, (message: any) => void> = new Map()
+    private handler: Map<string, (message: any) => void> = new Map()
     private tineOrigin: string
 
     private constructor()
@@ -122,9 +175,16 @@ export class TinePostMessageRouter
             return
         }
 
-        const callback = this.callbacks.get(uuid)
+        let callback = this.callbacks.get(uuid)
         if (callback == undefined) {
-            return
+            if (event.data.type === undefined) {
+                return
+            }
+
+            callback = this.handler.get(event.data.type)
+            if (callback === undefined) {
+                return
+            }
         }
 
         if (this.tineOrigin == undefined) {
@@ -153,6 +213,18 @@ export class TinePostMessageRouter
             window.parent.postMessage(Object.assign({
                 eventUUID: uuid,
             }, message), this.tineOrigin);
+        })
+    }
+
+    public registerFunction(typeRequest: string, typeResponse: string, handler: (message: any) => any): void {
+        this.handler.set(typeRequest, async (message: any) => {
+            const result = await handler(message.args)
+            
+            this.postMessage({
+                type: typeResponse,
+                result: result,
+                eventUUID: message.eventUUID
+            })
         })
     }
 
