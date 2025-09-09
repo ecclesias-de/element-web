@@ -129,6 +129,7 @@ async function getSecretStorageKey(
 
                 return [keyId, key]
             } else {
+                
                 onRecoveryKeyCheckFailed()
             }
         } catch {
