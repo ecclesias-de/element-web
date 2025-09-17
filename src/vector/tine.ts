@@ -60,6 +60,16 @@ export async function tineBootstrap(start: () => Promise<void>) {
     start()
 
     tpmr.registerFunction('checkRecoveryDatumRequest', 'checkRecoveryDatumResponse', (message: any) => checkRecoveryDatum(message.recoveryDatum))
+    tpmr.registerFunction('clearLocalStorageRequest', 'clearLocalStorageResponse', (message: any) => clearLocalStorage())
+}
+
+async function clearLocalStorage(): Promise<void> {
+    for (const db of await window.indexedDB.databases()) {
+        window.indexedDB.deleteDatabase(db.name!)
+    }
+
+    window.localStorage.clear()
+    window.sessionStorage.clear()
 }
 
 async function checkRecoveryDatum(recoverDatum: string): Promise<[boolean, string]> {
