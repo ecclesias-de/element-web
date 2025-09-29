@@ -1,7 +1,7 @@
 import { deriveRecoveryKeyFromPassphrase } from "matrix-js-sdk/lib/crypto-api";
 import { MatrixClientPeg } from "../MatrixClientPeg";
 import { HAS_ACCESS_TOKEN_STORAGE_KEY, persistAccessTokenInStorage } from "../utils/tokens/tokens";
-import { TinePlatform } from "./platform/TinePlatform";
+import { requestNotificationPermission, TinePlatform } from "./platform/TinePlatform";
 import { decodeRecoveryKey } from "matrix-js-sdk/src/crypto-api";
 import { SecretStorageKeyDescriptionAesV1 } from "matrix-js-sdk/src/secret-storage";
 
@@ -55,6 +55,8 @@ export async function tineBootstrap(start: () => Promise<void>) {
         }
         persistAccessTokenInStorage(logindata.mx_access_token, pickleKey!)
     }
+
+    await requestNotificationPermission()
 
     console.debug("TINE-INTEGRATION: bootstrap: Starting element.");
     start()
