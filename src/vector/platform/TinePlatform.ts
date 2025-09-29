@@ -54,7 +54,7 @@ export class TinePlatform extends WebPlatform {
     }
 
     public maySendNotifications(): boolean {
-        return this.notificationGrantCache
+        return true
     }
 
     public async requestNotificationPermission(): Promise<string> {
