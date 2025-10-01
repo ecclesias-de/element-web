@@ -144,6 +144,14 @@ export function onMakeInputToKeyFailed(hint?: string) {
     });
 }
 
+export function onElementOpenInAnotherWindow(hint?: string) {
+    TinePostMessageRouter.Instance.postMessage({
+        type: "elementStartupFailure",
+        failure: "elementOpenInAnotherWindow",
+        hint: hint,
+    });
+}
+
 export function onLocalStorageUseridDoseNotMatch(local: string | null, event: string) {
     TinePostMessageRouter.Instance.postMessage({
         type: "elementStartupFailure",
