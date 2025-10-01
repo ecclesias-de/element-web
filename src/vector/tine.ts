@@ -99,6 +99,10 @@ async function checkRecoveryDatum(recoverDatum: string): Promise<[boolean, strin
 }
 
 async function checkRecoveryPassword(keyInfo: SecretStorageKeyDescriptionAesV1, passphrase: string): Promise<boolean> {
+    if (keyInfo.passphrase === undefined) {
+        return false
+    }
+
     const key = await deriveRecoveryKeyFromPassphrase(passphrase, keyInfo.passphrase.salt, keyInfo.passphrase.iterations)
     if (key === null) {
         return false
