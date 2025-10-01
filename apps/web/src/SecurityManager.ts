@@ -55,9 +55,12 @@ function makeInputToKey(
     keyInfo: SecretStorage.SecretStorageKeyDescription,
 ): (keyParams: KeyParams) => Promise<Uint8Array<ArrayBuffer>> {
     return async ({ passphrase, recoveryKey }): Promise<Uint8Array<ArrayBuffer>> => {
-        if (passphrase) {
+        // TINE INTEGRATION - temporary fix: tine should delete password if key is set - PATCH START
+        if (passphrase && keyInfo.passphrase !== undefined) {
             return deriveRecoveryKeyFromPassphrase(passphrase, keyInfo.passphrase.salt, keyInfo.passphrase.iterations);
-        } else if (recoveryKey) {
+        }
+        if (recoveryKey) {
+        // TINE INTEGRATION - PATCH END
             return decodeRecoveryKey(recoveryKey);
         }
         throw new Error("Invalid input, passphrase or recoveryKey need to be provided");
