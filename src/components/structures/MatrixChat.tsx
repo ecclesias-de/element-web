@@ -141,6 +141,7 @@ import Markdown from "../../Markdown";
 import { sanitizeHtmlParams } from "../../Linkify";
 import { isOnlyAdmin } from "../../utils/membership";
 import { ModuleApi } from "../../modules/Api.ts";
+import { onElementOpenInAnotherWindow } from "../../vector/tine";
 
 // legacy export
 export { default as Views } from "../../Views";
@@ -2140,6 +2141,9 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                 </div>
             );
         } else if (this.state.view === Views.CONFIRM_LOCK_THEFT) {
+            //TINE INTEGRATION - PATCH START
+            onElementOpenInAnotherWindow()
+            //TINE INTEGRATION - PATCH END
             view = (
                 <ConfirmSessionLockTheftView
                     onConfirm={() => {
