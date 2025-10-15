@@ -142,7 +142,7 @@ import Markdown from "../../Markdown";
 import { sanitizeHtmlParams } from "../../Linkify";
 import { isOnlyAdmin } from "../../utils/membership";
 import { ModuleApi } from "../../modules/Api.ts";
-import { onElementOpenInAnotherWindow } from "../../vector/tine";
+import { onElementOpenInAnotherWindow, onSetupEncryptionDone } from "../../vector/tine";
 
 // legacy export
 export { default as Views } from "../../Views";
@@ -2141,6 +2141,16 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                 return;
             }
         }
+
+        // TINE INTEGRATION - recovery key management - PATCH START
+        // Notifies tine that encryption setup is done. Tine will unhide element
+        onSetupEncryptionDone()
+        // TINE INTEGRATION - PATCH END
+
+        // TINE INTEGRATION - recovery key management - PATCH START
+        // Notifies tine that encryption setup is done. Tine will unhide element
+        onSetupEncryptionDone()
+        // TINE INTEGRATION - PATCH END
 
         this.onShowPostLoginScreen();
     };
