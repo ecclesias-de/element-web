@@ -194,6 +194,16 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                 store.usePassPhrase()
                 // TINE INTEGRATION - PATCH END
             }
+            // TINE INTEGRATION - recovery key management - PATCH START
+            // Key info is missing the first time element is started after setting up the recovery key. This should be fixed some where. But reloading is a functional workaround.
+            // But in case the matrix account dose not have a recovery key (and is not a new account) this workaround will result in a restart loop. It can be fixed by setting a
+            // recovery key using another client.
+            else {
+                console.warn("TINE-INTEGRATION: keyInfo not set. Reloading client. There may not be any recovery key/password. Use another client to set a recovery key first.")
+                window.location.reload()
+            }
+            // TINE INTEGRATION - PATCH END
+
 
             let signOutButton;
             if (this.props.allowLogout) {
@@ -242,7 +252,6 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                 // with the encryption setup dialog, if everything works. We probably should only auto "click" done, if we automatically
                 // entered the encryption key.
                 this.onDoneClick();
-                onSetupEncryptionDone()
                 // TINE INTEGRATION - PATCH END
             } else {
                 message = <p>{_t("encryption|verification|verification_success_without_backup")}</p>;
