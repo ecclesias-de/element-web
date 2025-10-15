@@ -29,6 +29,9 @@ import ExternalLink from "../../views/elements/ExternalLink";
 import dispatcher from "../../../dispatcher/dispatcher";
 // TINE INTEGRATION - PATCH START
 import { onEncryptionKeysLostFailed, onSetupEncryptionDone } from "../../../vector/tine";
+import * as Lifecycle from "../../../Lifecycle";
+import PlatformPeg from "../../../PlatformPeg";
+import { onLoggedOut } from "../../../Lifecycle";
 // TINE INTEGRATION - PATCH END
 
 interface IProps {
@@ -195,12 +198,19 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                 // TINE INTEGRATION - PATCH END
             }
             // TINE INTEGRATION - recovery key management - PATCH START
-            // Key info is missing the first time element is started after setting up the recovery key. This should be fixed some where. But reloading is a functional workaround.
+            // Key info is missing the first time element is started after setting up the recovery key. This should be fixed some where. Logging out and reloading is a functional workaround.
             // But in case the matrix account dose not have a recovery key (and is not a new account) this workaround will result in a restart loop. It can be fixed by setting a
             // recovery key using another client.
+            // This function ist build from relevant parts of Lifecycle.logout() function. This must be done to be able to wait for logout to finish and then reload the page.
+            // To login again.
             else {
                 console.warn("TINE-INTEGRATION: keyInfo not set. Reloading client. There may not be any recovery key/password. Use another client to set a recovery key first.")
-                window.location.reload()
+                const client = MatrixClientPeg.get();
+                if (!client) return;
+                        
+                PlatformPeg.get()?.destroyPickleKey(client.getSafeUserId(), client.getDeviceId() ?? "");
+            
+                client.logout(true).then(onLoggedOut).then(() => window.location.reload())
             }
             // TINE INTEGRATION - PATCH END
 
