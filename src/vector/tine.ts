@@ -194,6 +194,8 @@ export class TinePostMessageRouter
             return;
         }
 
+        console.debug(`TINE-INTEGRATION: message received : ${JSON.stringify(event.data)}`)
+
         const uuid = event.data.eventUUID
         if (uuid == undefined) {
             return
@@ -233,6 +235,9 @@ export class TinePostMessageRouter
                 }
                 resolve(message)
             })
+
+            console.debug(`TINE-INTEGRATION: message posted: ${JSON.stringify(message)}`)
+
 
             window.parent.postMessage(Object.assign({
                 eventUUID: uuid,
