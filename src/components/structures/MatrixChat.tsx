@@ -142,7 +142,7 @@ import { ShareFormat, type SharePayload } from "../../dispatcher/payloads/ShareP
 import Markdown from "../../Markdown";
 import { sanitizeHtmlParams } from "../../Linkify";
 import { isOnlyAdmin } from "../../utils/membership";
-import { onElementOpenInAnotherWindow } from "../../vector/tine";
+import { onElementOpenInAnotherWindow, onSetupEncryptionDone } from "../../vector/tine";
 
 // legacy export
 export { default as Views } from "../../Views";
@@ -2068,6 +2068,11 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                 return;
             }
         }
+
+        // TINE INTEGRATION - recovery key management - PATCH START
+        // Notifies tine that encryption setup is done. Tine will unhide element
+        onSetupEncryptionDone()
+        // TINE INTEGRATION - PATCH END
 
         await this.onShowPostLoginScreen().catch((e) => {
             logger.error("Exception showing post-login screen", e);
