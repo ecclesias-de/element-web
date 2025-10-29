@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
  * Please see LICENSE files in the repository root for full details.
  */
-import React, { type JSX, useState } from "react";
-import { IconButton, Menu, MenuItem } from "@vector-im/compound-web";
+import React, { type JSX, Ref, useState } from "react";
+import { IconButton, Menu, MenuItem, Tooltip } from "@vector-im/compound-web";
 import ComposeIcon from "@vector-im/compound-design-tokens/assets/web/icons/compose";
 import UserAddIcon from "@vector-im/compound-design-tokens/assets/web/icons/user-add";
 import ChevronDownIcon from "@vector-im/compound-design-tokens/assets/web/icons/chevron-down";
@@ -141,6 +141,18 @@ function SpaceMenu({ vm }: SpaceMenuProps): JSX.Element {
     );
 }
 
+interface MenuTriggerProps extends React.ComponentProps<typeof IconButton> {
+    ref?: Ref<HTMLButtonElement>;
+}
+
+const MenuTrigger = ({ ref, ...props }: MenuTriggerProps): JSX.Element => (
+    <Tooltip label={_t("action|start_chat")}>
+        <IconButton aria-label={_t("action|add")} {...props} ref={ref}>
+            <ComposeIcon color="var(--cpd-color-icon-secondary)" />
+        </IconButton>
+    </Tooltip>
+);
+
 interface ComposeMenuProps {
     /**
      * The view model for the room list header
@@ -162,11 +174,7 @@ function ComposeMenu({ vm }: ComposeMenuProps): JSX.Element {
             title={_t("action|open_menu")}
             side="right"
             align="start"
-            trigger={
-                <IconButton aria-label={_t("action|add")}>
-                    <ComposeIcon color="var(--cpd-color-icon-secondary)" />
-                </IconButton>
-            }
+            trigger={<MenuTrigger />}
         >
             <MenuItem Icon={ChatIcon} label={_t("action|start_chat")} onSelect={vm.createChatRoom} hideChevron={true} />
             {vm.canCreateRoom && (
