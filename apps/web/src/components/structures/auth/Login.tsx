@@ -538,14 +538,25 @@ class LoginComponent extends React.PureComponent<IProps, IState> {
                     </h1>
                     {errorTextSection}
                     {serverDeadSection}
-                    <ServerPicker
+                    {/* TINE INTEGRATION - disable login screen - PATCH START */}
+                    {/* <ServerPicker
                         serverConfig={this.props.serverConfig}
                         onServerConfigChange={this.props.onServerConfigChange}
                         disabled={this.isBusy()}
-                    />
-                    {this.renderLoginComponentForFlows()}
-                    {this.props.children}
-                    {footer}
+                    /> */}
+                    {/* {this.renderLoginComponentForFlows()} */}
+                    {/* {this.props.children} */}
+                    {/* {footer} */}
+                    <AccessibleButton
+                        className="mx_Login_fullWidthButton"
+                        kind="primary"
+                        onClick={async () => {
+                            window.location.reload()
+                        }}
+                    >
+                        {_t("action|continue")}
+                    {/* TINE INTEGRATION - PATCH END */}
+                    </AccessibleButton>
                 </AuthBody>
             </AuthPage>
         );
