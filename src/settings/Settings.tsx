@@ -1235,7 +1235,7 @@ export const SETTINGS: Settings = {
     },
     "layout": {
         supportedLevels: LEVELS_ACCOUNT_SETTINGS,
-        default: Layout.Group,
+        default: Layout.Bubble,
     },
     "Images.size": {
         supportedLevels: LEVELS_ACCOUNT_SETTINGS,
