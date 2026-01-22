@@ -112,10 +112,12 @@ export class InitialCryptoSetupStore extends EventEmitter {
             // return the same recovery key used here.
             const recoveryPassword = getRecoveryData().passphrase
             if (!recoveryPassword) {
+                console.debug("ELEMENT-TINE-INTEGRATION: InitialCryptoSetupStore: recovery password is undefined");
                 // todo: if this fails, the user can retry or cancel. canceling should not be an option. we want to force this to be setup, even
                 // if this means a user can not use matrix if there is an error. They should contact support.
                 throw "Recovery password is undefined"
             }
+            console.debug("ELEMENT-TINE-INTEGRATION: InitialCryptoSetupStore: bootstrapSecretStore");
             await cryptoApi.bootstrapSecretStorage({
                 createSecretStorageKey: async () => await MatrixClientPeg.safeGet().getCrypto()!.createRecoveryKeyFromPassphrase(recoveryPassword),
                 setupNewKeyBackup: true,

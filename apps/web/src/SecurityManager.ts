@@ -56,6 +56,7 @@ function makeInputToKey(
 ): (keyParams: KeyParams) => Promise<Uint8Array<ArrayBuffer>> {
     return async ({ passphrase, recoveryKey }): Promise<Uint8Array<ArrayBuffer>> => {
         // TINE INTEGRATION - temporary fix: tine should delete password if key is set - PATCH START
+        console.debug("ELEMENT-TINE-INTEGRATION: makeInputToKey");
         if (passphrase && keyInfo.passphrase !== undefined) {
             return deriveRecoveryKeyFromPassphrase(passphrase, keyInfo.passphrase.salt, keyInfo.passphrase.iterations);
         }
@@ -118,14 +119,14 @@ async function getSecretStorageKey(
     // TINE INTEGRATION - recovery key management - PATCH START
     // autofill recovery password, if it fails element will show a prompt to request the user to enter
     // the password or upload there key
-    logger.debug(`getSecretStorageKey: trying to get key from tine`);
+    logger.debug("ELEMENT-TINE-INTEGRATION: getSecretStorageKey: trying to get key from tine");
     const recoveryData = getRecoveryData()
     if (recoveryData.passphrase || recoveryData.recoveryKey) {
         try {
             const key = await makeInputToKey(keyInfo)(recoveryData);
 
             if (await MatrixClientPeg.safeGet().secretStorage.checkKey(key, keyInfo)) {
-                logger.debug(`getSecretStorageKey: got key from tine`);
+                logger.debug("ELEMENT-TINE-INTEGRATION: getSecretStorageKey: got key from tine");
 
                 cacheSecretStorageKey(keyId, keyInfo, key);
 

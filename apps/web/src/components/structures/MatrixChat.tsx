@@ -386,8 +386,9 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         const restoreSuccess = await this.loadSession();
         if (restoreSuccess) {
             // TINE INTEGRATION - auto login: fix e2ee setup - PATCH START
-            // run e2e setup / completion event when loading restring session from disk.
-            // our integration setup local storage like a new login, but dose not setup e2e / s4
+            // run e2e setup / send completion event when restoring session from disk.
+            // our integration sets up local storage like a new login, but dose not setup e2e / s4
+            console.debug("ELEMENT-TINE-INTEGRATION: call postLoginSetup");
             await this.postLoginSetup()
             // TINE INTEGRATION - PATCH END
             return;

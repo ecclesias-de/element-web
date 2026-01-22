@@ -196,6 +196,7 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                 // TINE INTEGRATION - recovery key management - PATCH START
                 // "click" use recovery key button for user. Our modified getSecretStorageKey function, will automatically use the recovery key,
                 // if tine provided a correct one. (It should prompt the user if the key dose not work.) We might want to check the correctness here to before auto "clicking" use recovery key.
+                console.debug("ELEMENT-TINE-INTEGRATION: SetupEncryptionBody: auto 'click' usePassPhrase");
                 store.usePassPhrase()
                 // TINE INTEGRATION - PATCH END
             }
@@ -206,7 +207,7 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
             // This function ist build from relevant parts of Lifecycle.logout() function. This must be done to be able to wait for logout to finish and then reload the page.
             // To login again.
             else {
-                console.warn("TINE-INTEGRATION: keyInfo not set. Reloading client. There may not be any recovery key/password. Use another client to set a recovery key first.")
+                console.warn("ELEMENT-TINE-INTEGRATION: keyInfo not set. Reloading client. There may not be any recovery key/password. Use another client to set a recovery key first.")
                 const client = MatrixClientPeg.get();
                 if (!client) return;
                         
@@ -263,6 +264,7 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                 // "clicking" done for user if encryption setup succeeded with backup. As we do not want the user to have to interact
                 // with the encryption setup dialog, if everything works. We probably should only auto "click" done, if we automatically
                 // entered the encryption key.
+                console.debug("ELEMENT-TINE-INTEGRATION: SetupEncryptionBody: auto 'click' done");
                 this.onDoneClick();
                 // TINE INTEGRATION - PATCH END
             } else {
