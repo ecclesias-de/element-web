@@ -60,7 +60,18 @@ export function onNewScreen(screen: string, replaceLast = false): void {
     if (replaceLast) {
         window.location.replace(hash);
     } else {
-        window.location.assign(hash);
+        // TINE-INTEGRATION - PATCH START
+        // Adds an `if (window.location.hash !== hash)`. There is / was a weird bug in firefox, which caused an infinite
+        // loop, on first startup. wind location hash was already #home and it was set again to #home. Which caused firefox
+        // to reload the page. Did not happen on chromium. Did not happen with firefox in the dev setup (webpack).
+        // Occoured on firefox beta 148 and firefox not beta 147. Older version not tested. On firefox 148, i once got a
+        // warning browser not supported. On firefox 147 not (Was a new firefox profile should not have saved the ignore).
+        // With app.element.io i dit not have the problem, if i remember correctly. Checked again with 1.12.8 (ebhh is on 1.12.6)
+        // it dose not happen. Probably has something to to with some patch.
+        if (window.location.hash !== hash) {
+            window.location.assign(hash);
+        }
+        // TINE-INTEGRATION - PATCH END
     }
 }
 
