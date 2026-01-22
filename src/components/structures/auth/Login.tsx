@@ -550,6 +550,7 @@ export default class LoginComponent extends React.PureComponent<IProps, IState> 
                         className="mx_Login_fullWidthButton"
                         kind="primary"
                         onClick={async () => {
+                            debugger;
                             window.location.reload()
                         }}
                     >

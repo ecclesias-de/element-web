@@ -414,6 +414,7 @@ export default class ElectronPlatform extends BasePlatform {
     }
 
     public reload(): void {
+        debugger;
         window.location.reload();
     }
 

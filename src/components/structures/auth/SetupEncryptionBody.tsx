@@ -213,7 +213,10 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                         
                 PlatformPeg.get()?.destroyPickleKey(client.getSafeUserId(), client.getDeviceId() ?? "");
             
-                client.logout(true).then(onLoggedOut).then(() => window.location.reload())
+                client.logout(true).then(onLoggedOut).then(() => {
+                    debugger;
+                    window.location.reload();
+                })
             }
             // TINE INTEGRATION - PATCH END
 

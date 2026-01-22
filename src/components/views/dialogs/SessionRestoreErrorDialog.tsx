@@ -43,6 +43,7 @@ export default class SessionRestoreErrorDialog extends React.Component<IProps> {
     private onRefreshClick = (): void => {
         // Is this likely to help? Probably not, but giving only one button
         // that clears your storage seems awful.
+        debugger;
         window.location.reload();
     };
 
