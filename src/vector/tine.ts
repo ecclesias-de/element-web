@@ -130,6 +130,7 @@ export function getRecoveryData(): {passphrase: string | undefined, recoveryKey:
 }
 
 export function onRecoveryKeyCheckFailed() {
+    console.debug("ELEMENT-TINE-INTEGRATION: onRecoveryKeyCheckFailed");
     TinePostMessageRouter.Instance.postMessage({
         type: "elementStartupFailure",
         failure: "recoveryKeyIncorrect"
@@ -137,6 +138,7 @@ export function onRecoveryKeyCheckFailed() {
 }
 
 export function onMakeInputToKeyFailed(hint?: string) {
+    console.debug(`ELEMENT-TINE-INTEGRATION: onMakeInputToKeyFailed: hint="${hint}"`);
     TinePostMessageRouter.Instance.postMessage({
         type: "elementStartupFailure",
         failure: "recoveryDataInvalid",
@@ -145,6 +147,7 @@ export function onMakeInputToKeyFailed(hint?: string) {
 }
 
 export function onElementOpenInAnotherWindow(hint?: string) {
+    console.debug(`ELEMENT-TINE-INTEGRATION: onElementOpenInAnotherWindow: hint="${hint}"`);
     TinePostMessageRouter.Instance.postMessage({
         type: "elementStartupFailure",
         failure: "elementOpenInAnotherWindow",
@@ -153,6 +156,7 @@ export function onElementOpenInAnotherWindow(hint?: string) {
 }
 
 export function onLocalStorageUseridDoseNotMatch(local: string | null, event: string) {
+    console.debug(`ELEMENT-TINE-INTEGRATION: onLocalStorageUseridDoseNotMatch: local="${local}", event="${event}"`);
     TinePostMessageRouter.Instance.postMessage({
         type: "elementStartupFailure",
         failure: "localUserDoseNotMatch",
@@ -161,6 +165,7 @@ export function onLocalStorageUseridDoseNotMatch(local: string | null, event: st
 }
 
 export function onEncryptionKeysLostFailed() {
+    console.debug("ELEMENT-TINE-INTEGRATION: onEncryptionKeysLostFailed");
     TinePostMessageRouter.Instance.postMessage({
         type: "elementStartupFailure",
         failure: "encryptionKeysLost"
@@ -168,6 +173,7 @@ export function onEncryptionKeysLostFailed() {
 }
 
 export function onSetupEncryptionDone() {
+    console.debug("ELEMENT-TINE-INTEGRATION: onSetupEncryptionDone");
     TinePostMessageRouter.Instance.postMessage({
         type: "elementSetupEncryptionDone",
     });

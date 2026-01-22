@@ -91,11 +91,17 @@ export async function encryptPickleKey(
     // Adding a second layer of encryption, should not weaken the previous assumptions.
     const sessionKeyEncoded = sessionStorage.getItem('tine_session_encryption_key')
     if (sessionKeyEncoded) {
+        console.debug("ELEMENT-TINE-INTEGRATION: pickling: encrypting pickleKey a second time");
         const sessionKey = await crypto.subtle.importKey("raw", decodeBase64(sessionKeyEncoded), "AES-GCM", false, ["encrypt", "decrypt"]);
 
         const encrypted2 = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, sessionKey, encrypted);
 
+        console.debug("ELEMENT-TINE-INTEGRATION: pickling: encrypted pickleKey a second time successfully");
+
         return { encrypted: encrypted2, iv, cryptoKey }
+    } else {
+        console.debug("ELEMENT-TINE-INTEGRATION: pickling: session key not found");
+        throw "element tine integration: session key not found"
     }
     // TINE INTEGRATION - PATCH END
     return { encrypted, iv, cryptoKey };
@@ -130,10 +136,15 @@ export async function buildAndEncodePickleKey(
         // see comment in encryptPickleKey patch
         const sessionKeyEncoded = sessionStorage.getItem('tine_session_encryption_key')
         if (sessionKeyEncoded) {
-            
+            console.debug("ELEMENT-TINE-INTEGRATION: pickling: decrypting pickleKeys second layer");
             const sessionKey = await crypto.subtle.importKey("raw", decodeBase64(sessionKeyEncoded), "AES-GCM", false, ["encrypt", "decrypt"]);
 
             data.encrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: data.iv }, sessionKey, data.encrypted);
+
+            console.debug("ELEMENT-TINE-INTEGRATION: pickling: decrypted pickleKeys second layer successfully");
+        } else {
+            console.debug("ELEMENT-TINE-INTEGRATION: pickling: session key not found");
+            throw "element tine integration: session key not found"
         }
         // TINE INTEGRATION - PATCH END
         const additionalData = getPickleAdditionalData(userId, deviceId);
