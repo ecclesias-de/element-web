@@ -841,12 +841,12 @@ Detects whether or not elements can be animated using CSS
 
   // If a document is in rtl mode this test will fail so we force ltr mode on the injected
   // element https://github.com/Modernizr/Modernizr/issues/716
-  testStyles('#modernizr{display: table; direction: ltr}#modernizr div{display: table-cell; padding: 10px}', function(elem) {
-    var ret;
-    var child = elem.childNodes;
-    ret = child[0].offsetLeft < child[1].offsetLeft;
-    Modernizr.addTest('displaytable', ret, {aliases: ['display-table']});
-  }, 2);
+  // testStyles('#modernizr{display: table; direction: ltr}#modernizr div{display: table-cell; padding: 10px}', function(elem) {
+  //   var ret;
+  //   var child = elem.childNodes;
+  //   ret = child[0].offsetLeft < child[1].offsetLeft;
+  //   Modernizr.addTest('displaytable', ret, {aliases: ['display-table']});
+  // }, 2);
 
 
   /**
