@@ -174,6 +174,21 @@ export function onEncryptionKeysLostFailed() {
 
 export function onSetupEncryptionDone() {
     console.debug("ELEMENT-TINE-INTEGRATION: onSetupEncryptionDone");
+    // Bug fix: see RT#258791
+    // Description: On the second ever start, element was missing s4/backup account data, and could therefore not use
+    // the recover key to setup s4.
+    // Reason: Element did not persist the account data cache to  indexedDb (, if running for less then 5min). On the next
+    // start, the client would load the non update account data from cache. The account data was missing, the s4/backup
+    // events. If the real sync request would not complete, before encryption setup, requesting the backup key info,
+    // backup key info would be null. Automatic encryption setup would fail.
+    // In firefox the real sync request always took to long. In Chrome it was not a problem. (Only tested chrome in the dev setup.)
+    // Fix: Force save the matrix clients store. (By default it will be saved automatically every 5 min.)
+    MatrixClientPeg.safeGet().store.save(true).then(
+        () => console.debug('ELEMENT-TINE-INTEGRATION: onSetupEncryptionDone: store saved')
+    ).catch(
+        (e) => console.warn('ELEMENT-TINE-INTEGRATION: onSetupEncryptionDone: saving store failed. Error:', e)
+    )
+    
     TinePostMessageRouter.Instance.postMessage({
         type: "elementSetupEncryptionDone",
     });
