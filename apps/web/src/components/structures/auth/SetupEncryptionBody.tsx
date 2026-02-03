@@ -201,22 +201,13 @@ export default class SetupEncryptionBody extends React.Component<IProps, IState>
                 // TINE INTEGRATION - PATCH END
             }
             // TINE INTEGRATION - recovery key management - PATCH START
-            // Key info is missing the first time element is started after setting up the recovery key. This should be fixed some where. Logging out and reloading is a functional workaround.
-            // But in case the matrix account dose not have a recovery key (and is not a new account) this workaround will result in a restart loop. It can be fixed by setting a
-            // recovery key using another client.
-            // This function ist build from relevant parts of Lifecycle.logout() function. This must be done to be able to wait for logout to finish and then reload the page.
-            // To login again.
+            // Key info might be missing. But key info should always be set, when using our integration. If Key info is missing, the recovery password will
+            // not be injected, and the user will see a dialog, with these option: "resetting the recovery key", "signin out" or "verifying with an other
+            // device".
+            // Not shure if its still possible to reach this condition. There was a bug, which caused key info to be empty on the second ever start. (firefox only)
+            // It was fixed by force saving the matrix store after encryption setup.
             else {
-                console.warn("ELEMENT-TINE-INTEGRATION: keyInfo not set. Reloading client. There may not be any recovery key/password. Use another client to set a recovery key first.")
-                const client = MatrixClientPeg.get();
-                if (!client) return;
-                        
-                PlatformPeg.get()?.destroyPickleKey(client.getSafeUserId(), client.getDeviceId() ?? "");
-            
-                client.logout(true).then(onLoggedOut).then(() => {
-                    debugger;
-                    window.location.reload();
-                })
+                console.warn("ELEMENT-TINE-INTEGRATION: keyInfo not set. ")
             }
             // TINE INTEGRATION - PATCH END
 
