@@ -410,7 +410,14 @@ export default class BasicMessageEditor extends React.Component<IProps, IState> 
         const { model } = this.props;
         this._isCaretAtEnd = position.isAtEnd(model);
         this.lastCaret = position.asOffset(model);
-        this.lastSelection = cloneSelection(document.getSelection()!);
+        // TINE-INTEGRATION - PATCH START
+        // We have a bug in firefox, where document.getSelection() was null, if element was loaded in the
+        // background. This cause the room panel to show an error.
+        const selection = document.getSelection()
+        if (selection) {
+            this.lastSelection = cloneSelection(selection);
+        }
+        // TINE-INTEGRATION - PATCH END
     }
 
     private refreshLastCaretIfNeeded(): DocumentOffset | undefined {
