@@ -17,7 +17,7 @@ import { shouldPolyfill as shouldPolyFillIntlSegmenter } from "@formatjs/intl-se
 import { parseQsFromFragment } from "./url_utils";
 import "./modernizr.cjs";
 // TINE INTEGRATION - bootstrap - PATCH START
-import { tineBootstrap } from "./tine";
+import { tineBootstrap, TinePostMessageRouter } from "./tine";
 // TINE INTEGRATION - PATCH END
 
 // Import shared components CSS
@@ -201,6 +201,10 @@ async function start(): Promise<void> {
                 }).catch(reject);
             });
         }
+
+        TinePostMessageRouter.Instance.postMessage({
+            type: "elementFeatureDetectionDone",
+        });
 
         try {
             // await config here
