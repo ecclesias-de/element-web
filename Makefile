@@ -12,6 +12,8 @@ docker-build:
 	fi
 	docker build -t registry.rz1.metaways.net/devops/element:$$(git describe --tags) .
 	docker push registry.rz1.metaways.net/devops/element:$$(git describe --tags)
+	docker tag registry.rz1.metaways.net/devops/element:$$(git describe --tags) registry.rz1.metaways.net/devops/element:latest
+	docker push registry.rz1.metaways.net/devops/element:latest
 
 install:
 	docker run -it -v $$(pwd):/app --user $$(id -u) --workdir /app node:24-bullseye yarn install
