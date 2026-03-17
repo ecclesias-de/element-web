@@ -12,9 +12,11 @@ let recoveryKey: string | undefined = undefined
 // the user data request must be send to all origins. The origin of the first successfully handled response, will become the
 // new origin. It is stored in window.localStorage["tine_origin"].
 export async function tineBootstrap(start: () => Promise<void>) {
-    console.debug("TINE-INTEGRATION: bootstrap: Requesting element bootstrapdata.")
-
     const tpmr = TinePostMessageRouter.Instance
+    tpmr.registerFunction('checkRecoveryDatumRequest', 'checkRecoveryDatumResponse', (message: any) => checkRecoveryDatum(message.recoveryDatum))
+    tpmr.registerFunction('clearLocalStorageRequest', 'clearLocalStorageResponse', (message: any) => clearLocalStorage())
+
+    console.debug("TINE-INTEGRATION: bootstrap: Requesting element bootstrapdata.")
 
     const bootstrapdata = await tpmr.postMessage({type: "elementBootstrapdataRequest"})
 
@@ -60,9 +62,6 @@ export async function tineBootstrap(start: () => Promise<void>) {
 
     console.debug("TINE-INTEGRATION: bootstrap: Starting element.");
     start()
-
-    tpmr.registerFunction('checkRecoveryDatumRequest', 'checkRecoveryDatumResponse', (message: any) => checkRecoveryDatum(message.recoveryDatum))
-    tpmr.registerFunction('clearLocalStorageRequest', 'clearLocalStorageResponse', (message: any) => clearLocalStorage())
 }
 
 async function clearLocalStorage(): Promise<void> {
