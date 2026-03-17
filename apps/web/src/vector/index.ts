@@ -99,7 +99,9 @@ function checkBrowserFeatures(): boolean {
     return featureComplete;
 }
 
-const supportedBrowser = checkBrowserFeatures();
+// TINE - INTEGRATION - modernizr failes if iframe is hidden in tine
+// const supportedBrowser = checkBrowserFeatures();
+const supportedBrowser = true;
 
 // React depends on Map & Set which we check for using modernizr's es6collections
 // if modernizr fails we may not have a functional react to show the error message.
@@ -201,10 +203,6 @@ async function start(): Promise<void> {
                 }).catch(reject);
             });
         }
-
-        TinePostMessageRouter.Instance.postMessage({
-            type: "elementFeatureDetectionDone",
-        });
 
         try {
             // await config here
