@@ -10,7 +10,7 @@ docker-build:
 		echo Git dirty! Commit or stash your changes.; \
 		exit 1; \
 	fi
-	docker build -t registry.rz1.metaways.net/devops/element:$$(git describe --tags) .
+	docker build -f ./apps/web/Dockerfile -t registry.rz1.metaways.net/devops/element:$$(git describe --tags) .
 	docker push registry.rz1.metaways.net/devops/element:$$(git describe --tags)
 	docker tag registry.rz1.metaways.net/devops/element:$$(git describe --tags) registry.rz1.metaways.net/devops/element:latest
 	docker push registry.rz1.metaways.net/devops/element:latest
