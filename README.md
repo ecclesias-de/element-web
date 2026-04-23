@@ -1,3 +1,18 @@
+# tine - integration
+Element fork indented to be included as an iframe in tine-groupware:
+
+Features:
+* auto login
+* encryption key management through tine
+* fix: notifications from iframe
+* "lock" element on browser close
+
+## 
+<img src="https://erzbistum-hamburg.de/_layout/EBHH_Logo_hoch.png" alt="erzbistum-hamburg logo" width="200"/></br>
+Mit freundlicher Unterstützung vom Erzbistum Hamburg
+
+# Original Element Web README
+
 [![Chat](https://img.shields.io/matrix/element-web:matrix.org?logo=matrix)](https://matrix.to/#/#element-web:matrix.org)
 ![Tests](https://github.com/element-hq/element-web/actions/workflows/tests.yaml/badge.svg)
 ![Static Analysis](https://github.com/element-hq/element-web/actions/workflows/static_analysis.yaml/badge.svg)
